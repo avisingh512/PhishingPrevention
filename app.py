@@ -31,7 +31,6 @@ def index():
     qr_codes = QRCode.query.all()
     return render_template('index.html', qr_codes=qr_codes)
 
-
 @app.route('/generate', methods=['POST'])
 def generate():
     subject = request.form['subject']
@@ -41,7 +40,12 @@ def generate():
     sender_name = request.form['sender_name']
 
     qr_data = f"Sender Name: {sender_name}\nSubject: {subject}\nBody: {body}"
-    qr_url = url_for('qr_info_page', qr_data=qr_data, _external=True)
+    qr_code = QRCode(data=qr_data, sender_name=sender_name, subject=subject, body=body, email=email, expiration_time=expiration_time)
+    db.session.add(qr_code)
+    db.session.commit()
+
+    unique_id = qr_code.id  # Assuming 'id' is the primary key of the QRCode table
+    qr_url = url_for('qr_info_page', unique_id=unique_id, _external=True)
 
     qr = qrcode.QRCode(
         version=1,
@@ -57,10 +61,8 @@ def generate():
     img.save(img_io, 'PNG')
     img_io.seek(0)
 
-    qr_code = QRCode(data=qr_data, sender_name=sender_name, subject=subject, body=body, email=email, expiration_time=expiration_time)
-    db.session.add(qr_code)
-    db.session.commit()
     return send_file(img_io, mimetype='image/png')
+
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -104,17 +106,16 @@ def scan():
         # No QR code detected
         return jsonify({'error': 'No QR code detected'}), 404
 
-@app.route('/qr_info/<qr_data>', methods=['GET'])
-def qr_info_page(qr_data):
-    # Split the QR data into sender_name, subject, and body
-    parts = qr_data.split('\n')
-    sender_name = parts[0].split(': ')[1]
-    subject = parts[1].split(': ')[1]
-    body = parts[2].split(': ')[1]
-
-    # Render the QR information page template
-    return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
-
+@app.route('/qr_info/<int:unique_id>', methods=['GET'])
+def qr_info_page(unique_id):
+    qr_code = QRCode.query.get(unique_id)
+    if qr_code:
+        sender_name = qr_code.sender_name
+        subject = qr_code.subject
+        body = qr_code.body
+        return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
+    else:
+        return render_template('error.html', error='QR code data not found'), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
