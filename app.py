@@ -74,7 +74,7 @@ def generate():
     
     # Convert QR code image to bytes
     img_bytes = io.BytesIO()
-    img.save(img_bytes, format="PNG")
+    img.save(img_bytes)
     img_bytes = img_bytes.getvalue()
 
     # Create email message
