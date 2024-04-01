@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Information</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            padding-top: 50px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .qr-scan {
+            width: 45%;
+        }
+
+        .qr-info {
+            width: 45%;
+            display: none;
+        }
+
+        .qr-info.show {
+            display: block;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #3e8e41;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="qr-scan">
+            <h1>Scan QR Code</h1>
+            <form id="qr-form" action="{{ url_for('scan') }}" method="post" enctype="multipart/form-data">
+                <input type="file" name="image" accept="image/*" required>
+                <br><br>
+                <input type="submit" value="Scan QR Code">
+            </form>
+        </div>
+        <div class="qr-info">
+            <h1>QR Code Information</h1>
+            <p><strong>Sender Name:</strong> {{ sender_name }}</p>
+            <p><strong>Subject:</strong> {{ subject }}</p>
+            <p><strong>Body:</strong> {{ body }}</p>
+        </div>
+    </div>
+
+    <script>
+        const qrForm = document.getElementById('qr-form');
+        const qrInfo = document.querySelector('.qr-info');
+
+        qrForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from being submitted
+
+            const formData = new FormData(qrForm);
+
+            fetch('{{ url_for('scan') }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const qrInfoDiv = doc.querySelector('.qr-info');
+
+                if (qrInfoDiv) {
+                    qrInfo.innerHTML = qrInfoDiv.innerHTML;
+                    qrInfo.classList.add('show');
+                } else {
+                    alert('No QR code found in the image.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while scanning the QR code.');
+            });
+        });
+    </script>
+</body>
+</html>

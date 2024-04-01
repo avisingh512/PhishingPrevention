@@ -1,0 +1,10 @@
+# Virtual environment
+venv/
+__pyscale__/
+
+# Instance folder (if it contains sensitive information)
+instance/
+
+# Compiled Python files
+*.pyc
+__pycache__/

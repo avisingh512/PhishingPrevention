@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"], textarea {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #3e8e41;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate QR Code</h1>
+        <form action="{{ url_for('generate') }}" method="post">
+            
+
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email">
+
+            <label for="expiration_time">Expiration Time:</label>
+            <input type="text" id="expiration_time" name="expiration_time">
+
+            <label for="sender_name">Sender Name:</label>
+            <input type="text" id="sender_name" name="sender_name">
+
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+
+            <label for="body">Body:</label>
+            <textarea id="body" name="body" rows="4" cols="50" required></textarea>
+            
+            <input type="submit" value="Generate QR Code">
+        </form>
+
+        <h2>Scanned QR Codes:</h2>
+        <ul>
+            {% for qr_code in qr_codes %}
+            <li>
+                Data: {{ qr_code.data }}<br>
+                Subject: {{ qr_code.subject }}<br>
+                Body: {{ qr_code.body }}<br>
+                Email: {{ qr_code.email }}<br>
+                Expiration Time: {{ qr_code.expiration_time }}<br>
+                Sender Name: {{ qr_code.sender_name }}<br>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
