@@ -74,7 +74,7 @@ def generate():
     
     # Convert QR code image to bytes
     img_bytes = io.BytesIO()
-    img.save(img_bytes, format="JPEG")
+    img.save(img_bytes, format="PNG")
     img_bytes = img_bytes.getvalue()
 
     # Create email message
@@ -125,7 +125,7 @@ def generate():
     msg.attach(html_part)
 
     # Add QR code image
-    img_part = MIMEImage(img_bytes, name="qr_code.jpg", _encoder=encoders.encode_base64)
+    img_part = MIMEImage(img_bytes, name="qr_code.png", _encoder=encoders.encode_base64)
     img_part.add_header('Content-ID', '<qr_code>')
     msg.attach(img_part)
 
