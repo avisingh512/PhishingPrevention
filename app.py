@@ -4,9 +4,24 @@ import qrcode
 import cv2
 import numpy as np
 import io
-import pyotp
+from flask_mail import Mail
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+
 
 app = Flask(__name__)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'wells.pocproject@gmail.com'
+app.config['MAIL_PASSWORD'] = 'fluurehrnsteyghs'
+app.config['MAIL_DEFAULT_SENDER'] = 'wells.pocproject@gmail.com'
+
+mail = Mail(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///qr_codes.db'
 db = SQLAlchemy(app)
 
@@ -44,25 +59,83 @@ def generate():
     db.session.add(qr_code)
     db.session.commit()
 
-    unique_id = qr_code.id  # Assuming 'id' is the primary key of the QRCode table
+    unique_id = qr_code.id # Assuming 'id' is the primary key of the QRCode table
     qr_url = url_for('qr_info_page', unique_id=unique_id, _external=True)
-
     qr = qrcode.QRCode(
-        version=1,
+        version=2,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
+        box_size=20,
+        border=8,
     )
+
     qr.add_data(qr_url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert QR code image to bytes
+    img_bytes = io.BytesIO()
+    img.save(img_bytes, format="JPEG")
+    img_bytes = img_bytes.getvalue()
 
-    img_io = io.BytesIO()
-    img.save(img_io, 'PNG')
-    img_io.seek(0)
+    # Create email message
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = 'wells.pocproject@gmail.com'
+    msg['To'] = email
 
-    return send_file(img_io, mimetype='image/png')
+    # Add text content
+    #text = f"Sender Name: {sender_name}\nSubject: {subject}\nBody: {body}"
+    #text_part = MIMEText(text, 'plain')
+    #msg.attach(text_part)
 
+    # Add HTML content
+    html = f"""\
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f5f5f5;
+                padding: 20px;
+            }}
+            .container {{
+                background-color: white;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }}
+            .qr-code {{
+                text-align: center;
+                margin-top: 20px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <p>{body}</p>
+            <div class="qr-code">
+                <img src="cid:qr_code" alt="QR Code">
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    html_part = MIMEText(html, 'html')
+    msg.attach(html_part)
+
+    # Add QR code image
+    img_part = MIMEImage(img_bytes, name="qr_code.jpg", _encoder=encoders.encode_base64)
+    img_part.add_header('Content-ID', '<qr_code>')
+    msg.attach(img_part)
+
+    # Send email
+    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+        smtp.starttls()
+        smtp.login('wells.pocproject@gmail.com', 'fluurehrnsteyghs')
+        smtp.send_message(msg)
+
+    return 'Email sent successfully'
 
 @app.route('/scan', methods=['POST'])
 def scan():
