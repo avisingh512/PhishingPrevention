@@ -1,9 +1,8 @@
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
 import qrcode
-import cv2 
+import cv2
 import numpy as np
-import io
 import io
 import pyotp
 
@@ -32,6 +31,7 @@ def index():
     qr_codes = QRCode.query.all()
     return render_template('index.html', qr_codes=qr_codes)
 
+
 @app.route('/generate', methods=['POST'])
 def generate():
     subject = request.form['subject']
@@ -41,13 +41,15 @@ def generate():
     sender_name = request.form['sender_name']
 
     qr_data = f"Sender Name: {sender_name}\nSubject: {subject}\nBody: {body}"
+    qr_url = url_for('qr_info_page', qr_data=qr_data, _external=True)
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
         border=4,
     )
-    qr.add_data(qr_data)
+    qr.add_data(qr_url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
 
@@ -58,7 +60,6 @@ def generate():
     qr_code = QRCode(data=qr_data, sender_name=sender_name, subject=subject, body=body, email=email, expiration_time=expiration_time)
     db.session.add(qr_code)
     db.session.commit()
-
     return send_file(img_io, mimetype='image/png')
 
 @app.route('/scan', methods=['POST'])
@@ -75,52 +76,45 @@ def scan():
     data, vertices_array, binary_qrcode = detector.detectAndDecode(image)
     if vertices_array is not None:
         # QR code detected
-        # Check if the QR data is an Authenticator URI
-        if pyotp.utils.parse_uri(data.decode('utf-8')):
-            # It's an Authenticator URI, fetch the QR code data from the database
-            qr_code = QRCode.query.filter_by(data=data.decode('utf-8')).first()
-            if qr_code:
-                return render_template('qr_info.html', sender_name=qr_code.sender_name, subject=qr_code.subject, body=qr_code.body, email=qr_code.email, expiration_time=qr_code.expiration_time)
-            else:
-                return render_template('error.html', error='QR code data not found in the database'), 404
-        else:
-            # It's not an Authenticator URI, handle the QR data as before
-            parts = data.split('\n')
-            sender_name = parts[0].split(': ')[1]
-            subject = parts[1].split(': ')[1]
-            body = parts[2].split(': ')[1]
-            return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
+        qr_data = data
+        parts = qr_data.split('\n')
+        sender_name = parts[0].split(': ')[1]
+        subject = parts[1].split(': ')[1]
+        body = parts[2].split(': ')[1]
+        # Generate a QR code with the URL of the qr_info_page
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr_url = url_for('qr_info_page', qr_data=qr_data, _external=True)
+        qr.add_data(qr_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        img_io = io.BytesIO()
+        img.save(img_io, 'PNG')
+        img_io.seek(0)
+
+        # Return the QR code image
+        return send_file(img_io, mimetype='image/png')
+        #return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
     else:
         # No QR code detected
-        return render_template('error.html', error='No QR code detected'), 404
-        
-@app.route('/authenticator', methods=['GET'])
-def generate_authenticator_qr():
-    # Generate a secret key for OTP
-    secret_key = pyotp.random_base32()
-    # Create a URI for the Authenticator app
-    uri = pyotp.totp.TOTP(secret_key).provisioning_uri(name='Prevent Phishing', issuer_name='ABC Bank')
-    # Create a QR code from the URI
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(uri)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    img_io = io.BytesIO()
-    img.save(img_io, 'PNG')
-    img_io.seek(0)
+        return jsonify({'error': 'No QR code detected'}), 404
 
-    # Save the Authenticator URI in the database
-    qr_code = QRCode(data=uri)
-    db.session.add(qr_code)
-    db.session.commit()
+@app.route('/qr_info/<qr_data>', methods=['GET'])
+def qr_info_page(qr_data):
+    # Split the QR data into sender_name, subject, and body
+    parts = qr_data.split('\n')
+    sender_name = parts[0].split(': ')[1]
+    subject = parts[1].split(': ')[1]
+    body = parts[2].split(': ')[1]
 
-    # Return the QR code image
-    return send_file(img_io, mimetype='image/png')
+    # Render the QR information page template
+    return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
