@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>QR Code Information</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
@@ -22,14 +23,12 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-        }
-
-        .qr-scan {
-            width: 45%;
+            flex-wrap: wrap; /* Allow container to wrap to next line on smaller screens */
         }
 
         .qr-info {
-            width: 45%;
+            width: 100%; /* Full width on smaller screens */
+            display: none;
         }
 
         .qr-info.show {
@@ -71,15 +70,28 @@
         input[type="submit"]:hover {
             background-color: #3e8e41;
         }
+
+        @media (max-width: 768px) {
+            /* Styles for screens smaller than 768px */
+            .container {
+                padding: 20px;
+            }
+
+            .qr-info {
+                width: 100%;
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="qr-info">
+        <div class="qr-info" style="display: none;">
             <h1>QR Code Information</h1>
             <p><strong>Sender Name:</strong> {{ sender_name }}</p>
             <p><strong>Subject:</strong> {{ subject }}</p>
             <p><strong>Body:</strong> {{ body }}</p>
+            <p><strong>Ref Token:</strong>{{unique_id }}</p>
         </div>
     </div>
 

@@ -113,7 +113,7 @@ def qr_info_page(unique_id):
         sender_name = qr_code.sender_name
         subject = qr_code.subject
         body = qr_code.body
-        return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
+        return render_template('qr_info.html', unique_id=unique_id, sender_name=sender_name, subject=subject, body=body)
     else:
         return render_template('error.html', error='QR code data not found'), 404
 
