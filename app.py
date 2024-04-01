@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 import qrcode
 import cv2
 import numpy as np
-from PIL import Image
 import io
 
 app = Flask(__name__)
