@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email import encoders
-
+import random
 
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -28,11 +28,10 @@ db = SQLAlchemy(app)
 class QRCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.String(255), nullable=False)
-    sender_name = db.Column(db.String(255), nullable=True)
-    subject = db.Column(db.String(255), nullable=True)
+    send_to = db.Column(db.String(255), nullable=True)
     body = db.Column(db.Text, nullable=True)
-    email = db.Column(db.String(255), nullable=True)
     expiration_time = db.Column(db.String(255), nullable=True)
+    purpose = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f'<QRCode {self.data}>'
@@ -48,24 +47,28 @@ def index():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    subject = request.form['subject']
     body = request.form['body']
-    email = request.form['email']
-    expiration_time = request.form['expiration_time']
-    sender_name = request.form['sender_name']
+    send_to = request.form['send_to']
+    purpose = request.form['purpose']
+    expiration_time = 10 #request.form['expiration_time'] hardcode for now
 
-    qr_data = f"Sender Name: {sender_name}\nSubject: {subject}\nBody: {body}"
-    qr_code = QRCode(data=qr_data, sender_name=sender_name, subject=subject, body=body, email=email, expiration_time=expiration_time)
+    # Generate a random 6-digit number for the unique_id
+    while True:
+        unique_id = random.randint(100000, 999999)
+        if not QRCode.query.get(unique_id):
+            break
+    qr_data = f"Sent From: {app.config['MAIL_USERNAME']}\nSent To: {send_to}\nBody: {body}"
+    qr_code = QRCode(id=unique_id, data=qr_data, send_to=send_to, purpose=purpose, body=body, expiration_time=expiration_time)
     db.session.add(qr_code)
     db.session.commit()
 
-    unique_id = qr_code.id # Assuming 'id' is the primary key of the QRCode table
+    unique_id = qr_code.id
     qr_url = url_for('qr_info_page', unique_id=unique_id, _external=True)
     qr = qrcode.QRCode(
         version=2,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=20,
-        border=8,
+        box_size=10,
+        border=4,
     )
 
     qr.add_data(qr_url)
@@ -79,48 +82,16 @@ def generate():
 
     # Create email message
     msg = MIMEMultipart()
-    msg['Subject'] = subject
+    msg['Subject'] = purpose
     msg['From'] = 'wells.pocproject@gmail.com'
-    msg['To'] = email
+    msg['To'] = send_to
 
-    # Add text content
-    #text = f"Sender Name: {sender_name}\nSubject: {subject}\nBody: {body}"
-    #text_part = MIMEText(text, 'plain')
-    #msg.attach(text_part)
+    # Read the HTML template based on the purpose
+    with open(f"templates/{purpose}.html", "r") as file:
+        html = file.read()
 
-    # Add HTML content
-    html = f"""\
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                background-color: #f5f5f5;
-                padding: 20px;
-            }}
-            .container {{
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }}
-            .qr-code {{
-                text-align: center;
-                margin-top: 20px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <p>{body}</p>
-            <div class="qr-code">
-                <img src="cid:qr_code" alt="QR Code">
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    html = html.replace("{{ unique_id }}", str(unique_id))
+
     html_part = MIMEText(html, 'html')
     msg.attach(html_part)
 
@@ -153,7 +124,7 @@ def scan():
         # QR code detected
         qr_data = data
         parts = qr_data.split('\n')
-        sender_name = parts[0].split(': ')[1]
+        send_to = parts[0].split(': ')[1]
         subject = parts[1].split(': ')[1]
         body = parts[2].split(': ')[1]
         # Generate a QR code with the URL of the qr_info_page
@@ -174,7 +145,7 @@ def scan():
 
         # Return the QR code image
         return send_file(img_io, mimetype='image/png')
-        #return render_template('qr_info.html', sender_name=sender_name, subject=subject, body=body)
+        #return render_template('qr_info.html', send_to=send_to, subject=subject, body=body)
     else:
         # No QR code detected
         return jsonify({'error': 'No QR code detected'}), 404
@@ -183,10 +154,10 @@ def scan():
 def qr_info_page(unique_id):
     qr_code = QRCode.query.get(unique_id)
     if qr_code:
-        sender_name = qr_code.sender_name
-        subject = qr_code.subject
+        send_to = qr_code.send_to
+        purpose = qr_code.purpose
         body = qr_code.body
-        return render_template('qr_info.html', unique_id=unique_id, sender_name=sender_name, subject=subject, body=body)
+        return render_template('qr_info.html', unique_id=unique_id, send_to=send_to, purpose=purpose, body=body)
     else:
         return render_template('error.html', error='QR code data not found'), 404
 

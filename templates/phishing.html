@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phishing Warning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Dear Customer,</p>
+        <p>It has come to our attention that there are phishing attempts targeting our customers. Please be cautious of any suspicious emails or links asking for your personal information.</p>
+        <p>Do not click on any links or provide any information unless you are sure of the source.</p>
+        <div class="qr-code">
+            <img src="cid:qr_code" alt="QR Code">
+        </div>
+        <li>Refrence Token: <span id="unique_id">{{ unique_id }}</span></li>
+        <p class="footer">This is an automated message. Please do not reply.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KYC Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #888;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Dear Customer,</p>
+        <p>Please complete your KYC verification by providing the required documents to ensure compliance with regulatory requirements.</p>
+        <div class="qr-code">
+            <img src="cid:qr_code" alt="QR Code">
+        </div>
+        <li>Refrence Token: <span id="unique_id">{{ unique_id }}</span></li>
+        <p>Thank you for your cooperation.</p>
+        <p class="footer">This is an automated message. Please do not reply.</p>
+    </div>
+</body>
+</html>

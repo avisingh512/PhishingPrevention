@@ -23,7 +23,7 @@
         }
 
         h1, h2 {
-            color: #4CAF50;
+            color: #b30606;
             margin-bottom: 30px;
         }
 
@@ -31,6 +31,24 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
+        }
+
+        /* Style the select field */
+        select {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        /* Style the options in the select dropdown */
+        select option {
+            background-color: #fff;
+            color: #333;
         }
 
         input[type="text"], textarea {
@@ -44,8 +62,19 @@
             margin-bottom: 20px;
         }
 
+        input[type="email"] {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
         input[type="submit"] {
-            background-color: #4CAF50;
+            background-color: #b30606;
             color: #fff;
             padding: 10px 20px;
             border: none;
@@ -57,7 +86,7 @@
         }
 
         input[type="submit"]:hover {
-            background-color: #3e8e41;
+            background-color: #000000;
         }
 
         ul {
@@ -78,22 +107,24 @@
     <div class="container">
         <h1>Generate QR Code</h1>
         <form action="{{ url_for('generate') }}" method="post">
-            
 
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email">
+            <label for="send_to">Send To (Email) :</label>
+            <input type="email" id="send_to" name="send_to">
 
-            <label for="expiration_time">Expiration Time:</label>
-            <input type="text" id="expiration_time" name="expiration_time">
-
-            <label for="sender_name">Sender Name:</label>
-            <input type="text" id="sender_name" name="sender_name">
-
-            <label for="subject">Subject:</label>
-            <input type="text" id="subject" name="subject" required>
+            <label for="purpose">Select Purpose:</label>
+            <select id="purpose" name="purpose" onchange="updateBody()">
+                <option value="">Select</option>
+                <option value="kyc">KYC (Know Your Customer)</option>
+                <option value="otp">OTP (One-Time Password)</option>
+                <option value="phishing">Phishing Email</option>
+                <option value="verification">Verification</option>
+                <option value="transaction">Transaction Confirmation</option>
+                <option value="account">Account Information</option>
+                <option value="security">Security Alert</option>
+            </select>
 
             <label for="body">Body:</label>
-            <textarea id="body" name="body" rows="4" cols="50" required></textarea>
+            <textarea id="body" name="body" rows="2" cols="30">{{ body }}</textarea>
             
             <input type="submit" value="Generate QR Code">
         </form>
@@ -102,15 +133,43 @@
         <ul>
             {% for qr_code in qr_codes %}
             <li>
-                Data: {{ qr_code.data }}<br>
-                Subject: {{ qr_code.subject }}<br>
+                Subject: {{ qr_code.purpose }}<br>
                 Body: {{ qr_code.body }}<br>
-                Email: {{ qr_code.email }}<br>
-                Expiration Time: {{ qr_code.expiration_time }}<br>
-                Sender Name: {{ qr_code.sender_name }}<br>
+                Sent To: {{ qr_code.send_to }}<br>
             </li>
             {% endfor %}
         </ul>
     </div>
+    <script>
+        function updateBody() {
+            const purpose = document.getElementById('purpose').value;
+            let bodyText = '';
+
+            switch (purpose) {
+                case 'kyc':
+                    bodyText = 'This mail was sent to {send_to} for KYC.';
+                    break;
+                case 'otp':
+                    bodyText = 'This mail was sent to {send_to} for OTP verification.';
+                    break;
+                case 'account':
+                    bodyText = 'This mail was sent to {send_to} for account related information.';
+                    break;
+                case 'verification':
+                    bodyText = 'This mail was sent to {send_to} for verification purposes.';
+                    break;
+                case 'phishing':
+                    bodyText = 'This mail was sent to {send_to} as part of a phishing attempt. Please ignore.';
+                    break;
+                case 'transaction':
+                    bodyText = 'This mail was sent to {send_to} for transaction details.';
+                    break;
+                default:
+                    break;
+            }
+
+            document.getElementById('body').value = bodyText.replace('{send_to}', document.getElementById('send_to').value);
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transaction Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Dear Customer,</p>
+        <p>Your transaction has been successfully processed.</p>
+        <p>Transaction Details:</p>
+        <ul>
+            <li>Transaction ID: *******1234</li>
+            <li>Amount: $1000</li>
+            <li>Date: <span id="transaction_date"></span></li>
+            <li>Recipient: abc@gmail.com</li>
+        </ul>
+        <p>If you have any questions or concerns regarding this transaction, please contact our customer support.</p>
+        <div class="qr-code">
+            <img src="cid:qr_code" alt="QR Code">
+        </div>
+        <li>Refrence Token: <span id="unique_id">{{ unique_id }}</span></li>
+        <p class="footer">This is an automated message. Please do not reply.</p>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var now = new Date();
+            var dateElement = document.getElementById('transaction_date');
+            dateElement.textContent = now.toLocaleDateString();
+        });
+    </script>
+</body>
+</html>

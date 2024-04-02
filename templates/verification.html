@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Dear Customer,</p>
+        <p>Please verify your email address by clicking on the following link: <a href="{verification_link}">Verify Email</a></p>
+        <p>Thank you for using our services.</p>
+        <div class="qr-code">
+            <img src="cid:qr_code" alt="QR Code">
+        </div>
+        <li>Refrence Token: <span id="unique_id">{{ unique_id }}</span></li>
+        <p class="footer">This is an automated message. Please do not reply.</p>
+    </div>
+</body>
+</html>
