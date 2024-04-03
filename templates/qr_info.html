@@ -87,13 +87,20 @@
     <div class="container">
         <div class="qr-info">
             <h1>QR Code Information</h1>
-            <p><strong>Sender Name:</strong> {{ send_to }}</p>
+            <p id="send_to"><strong>Sender Name:</strong> {{ send_to }}</p>
+            <p><strong>Sent From:</strong> {{ sent_from }}</p>
             <p><strong>Subject:</strong> {{ purpose }}</p>
-            <p><strong>Body:</strong> {{ body }}</p>
-            <p><strong>Ref Token:</strong> {{unique_id }}</p>
+            <p><strong>Purpose:</strong> {{ body }}</p>
+            <p><strong>Reference Token:</strong> {{ unique_id }}</p>
         </div>
     </div>
-
+    <div class="buttons">
+        <button onclick="goHome()">Home</button>
+        <form action="/report_phishing" method="post">
+            <input type="hidden" name="email" value="{{ sent_from }}">
+            <input type="submit" value="Report Phishing">
+        </form>
+    </div>
     <script>
         const qrForm = document.getElementById('qr-form');
         const qrInfo = document.querySelector('.qr-info');
@@ -125,6 +132,14 @@
                 alert('An error occurred while scanning the QR code.');
             });
         });
+
+        function goHome() {
+            const send_to_element = document.getElementById('send_to');
+            const sender_info = send_to_element.textContent.split(':');
+            const email = sender_info[1].trim();
+            localStorage.setItem('send_to', email);
+            window.location.href = '/user';
+        }
     </script>
 </body>
 </html>

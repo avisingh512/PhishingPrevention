@@ -37,7 +37,7 @@ class QRCode(db.Model):
         return f'<QRCode {self.data}>'
 
 with app.app_context():
-    db.drop_all()
+    #db.drop_all()
     db.create_all()
 
 @app.route('/')
@@ -157,9 +157,41 @@ def qr_info_page(unique_id):
         send_to = qr_code.send_to
         purpose = qr_code.purpose
         body = qr_code.body
-        return render_template('qr_info.html', unique_id=unique_id, send_to=send_to, purpose=purpose, body=body)
+        sent_from = app.config['MAIL_USERNAME']
+        return render_template('qr_info.html', unique_id=unique_id, send_to=send_to, sent_from=sent_from, purpose=purpose, body=body)
     else:
         return render_template('error.html', error='QR code data not found'), 404
+    
+@app.route('/user/<string:email>', methods=['GET'])
+def user(email):
+    user_info = QRCode.query.filter_by(send_to=email).all()
+    if user_info:
+        emails = []
+        for info in user_info:
+            emails.append({
+                'id': info.id,
+                'send_to': info.send_to,
+                'purpose': info.purpose,
+                'body': info.body
+            })
+        return jsonify(emails)
+    else:
+        return jsonify({'error': 'User not found'}), 404
+    
+@app.route('/search', methods=['POST'])
+def search():
+    reference_token = request.form.get('reference_token')
+    qr_data = QRCode.query.filter_by(id=reference_token).first()
+
+    if qr_data:
+        sent_from = app.config['MAIL_USERNAME']
+        return render_template('user.html', user_info=qr_data, sent_from=sent_from)
+    else:
+        return render_template('user.html', message='No data found for the given Reference Token.')
+
+@app.route('/user')
+def user_page():
+    return render_template('user.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

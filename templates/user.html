@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 200px;
+            margin-right: 10px;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .message {
+            text-align: center;
+            color: red;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Information</h1>
+
+        <div class="user-info">
+            <h2>User Details</h2>
+            <ul>
+                <li><strong>User: </strong> </li>
+            </ul>
+        </div>
+
+        <h2>Search Data by Reference Token</h2>
+        <form action="/search" method="POST">
+            <input type="text" name="reference_token" placeholder="Enter Reference Token" required>
+            <input type="submit" value="Search">
+        </form>
+
+        {% if message %}
+        <p class="message">{{ message }}</p>
+        {% endif %}
+
+        {% if user_info %}
+        <div class="user-info">
+            <h2>User Emails</h2>
+            <ul id="emails-list">
+                {% for info in user_info %}
+                <li>
+                    <strong>Reference Token:</strong> {{ info.id }}<br>
+                    <strong>Sender:</strong> {{ info.send_to }}<br>
+                    <strong>Purpose:</strong> {{ info.purpose }}<br>
+                    <strong>Body:</strong> {{ info.body }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     getEmails();
+        // });
+        document.addEventListener('DOMContentLoaded', function() {
+            getEmails();
+        });
+
+        function getEmails() {
+            const userEmail = localStorage.getItem('send_to');
+
+            fetch(`/user/${userEmail}`)
+                .then(response => response.json())
+                .then(data => {
+                    const emailsList = document.getElementById('emails-list');
+                    emailsList.innerHTML = '';
+
+                    data.forEach(email => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `From: ${email.sender}, Subject: ${email.subject}`;
+                        emailsList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching emails.');
+                });
+        }
+    </script>
+</body>
+</html>
