@@ -111,15 +111,17 @@
         .home-icon:hover {
             color: #000000;
         }
+
+        .user-details {
+            display: none;
+        }
         
     </style>
 </head>
 <body>
     <a href="#" onclick="goHome()" class="home-icon"><i class="fas fa-home"></i>Home</a>
     <div class="container">
-        <h1>User Information</h1>
-
-        <div class="user-info">
+        <div class="user-details">
             <ul>
                 <li id="send_to"><strong>User: {{ emails[0].send_to }}</strong> </li>
             </ul>

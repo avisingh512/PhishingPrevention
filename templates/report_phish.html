@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Phishing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input[type=text], select, textarea {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type=submit] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type=submit]:hover {
+            background-color: #45a049;
+        }
+
+        .home-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #b30606;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            z-index: 1; /* Add a higher z-index to ensure the icon is displayed on top */
+        }
+
+        .home-icon:hover {
+            color: #000000;
+        }
+
+        .user-info {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="#" onclick="goHome()" class="home-icon"><i class="fas fa-home"></i>Home</a>
+    <div class="container">
+        <div class="user-info">
+            <ul>
+                <li id="send_to"><strong>User: {{ send_to }}</strong> </li>
+            </ul>
+        </div>
+
+        <h1>Report Phishing</h1>
+        <form id="phishing-form">
+            <label for="unique-token">Reference Token</label>
+            <input type="text" id="unique-token" name="unique-token" placeholder="Enter the reference token" required>
+
+            <label for="sender-email">Sender's Email Address</label>
+            <input type="text" id="sender-email" name="sender-email" placeholder="Enter the sender's email address" required>
+
+            <label for="subject">Subject Line</label>
+            <input type="text" id="subject" name="subject" placeholder="Enter the subject line" required>
+
+            <label for="reason">Reason for Reporting</label>
+            <select id="reason" name="reason" required>
+                <option value="">Select a reason</option>
+                <option value="suspicious-content">Suspicious content</option>
+                <option value="personal-info">Requesting personal information</option>
+                <option value="unauthorized-access">Unauthorized account access attempt</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label for="comments">Additional Comments</label>
+            <textarea id="comments" name="comments" placeholder="Enter any additional comments"></textarea>
+
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <script>
+        const form = document.getElementById('phishing-form');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const data = {};
+
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            fetch('/report_phishing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                alert('Phishing report submitted successfully!');
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the phishing report.');
+            });
+        });
+
+        function goHome() {
+            const send_to_element = document.getElementById('send_to');
+            const sender_info = send_to_element.textContent.split(':');
+            const email = sender_info[1].trim();
+            window.location.href = '/user/' + email;
+        }
+    </script>
+</body>
+</html>

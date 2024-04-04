@@ -195,10 +195,26 @@ def search():
         return render_template('user.html', emails=emails, sent_from=sent_from)
     else:
         return render_template('user.html', message='No data found for the given Reference Token.')
+    
 
-@app.route('/user')
-def user_page():
-    return render_template('user.html')
+@app.route('/report_phish/<string:email>', methods=['GET'])
+def report_phish(email):
+    return render_template('report_phish.html', send_to=email)
+
+
+@app.route('/report_phishing', methods=['POST'])
+def report_phishing():
+    data = request.get_json()
+
+    unique_token = data.get('unique-token')
+    sender_email = data.get('sender-email')
+    subject = data.get('subject')
+    reason = data.get('reason')
+    comments = data.get('comments')
+
+    # Return a success response
+    return jsonify({'message': 'Phishing report received successfully.'})
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+     app.run(debug=True)
