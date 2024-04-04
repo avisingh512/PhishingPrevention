@@ -38,6 +38,16 @@
             background-color: #45a049;
         }
 
+        input[type=file] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
         .home-icon {
             position: fixed;
             top: 20px;
@@ -68,7 +78,7 @@
         </div>
 
         <h1>Report Phishing</h1>
-        <form id="phishing-form">
+        <form id="phishing-form" enctype="multipart/form-data">
             <label for="unique-token">Reference Token</label>
             <input type="text" id="unique-token" name="unique-token" placeholder="Enter the reference token" required>
 
@@ -86,6 +96,9 @@
                 <option value="unauthorized-access">Unauthorized account access attempt</option>
                 <option value="other">Other</option>
             </select>
+
+            <label for="attachment">Attachment (Optional)</label>
+            <input type="file" id="attachment" name="attachment" accept=".jpg,.jpeg,.png,.pdf">
 
             <label for="comments">Additional Comments</label>
             <textarea id="comments" name="comments" placeholder="Enter any additional comments"></textarea>
