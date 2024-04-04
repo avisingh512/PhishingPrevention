@@ -174,18 +174,25 @@ def user(email):
                 'purpose': info.purpose,
                 'body': info.body
             })
-        return jsonify(emails)
+        sent_from = app.config['MAIL_USERNAME']
+        return render_template('user.html', emails=emails, sent_from=sent_from)
     else:
-        return jsonify({'error': 'User not found'}), 404
-    
+        return render_template('user.html', error='User not found')
+        
 @app.route('/search', methods=['POST'])
 def search():
     reference_token = request.form.get('reference_token')
-    qr_data = QRCode.query.filter_by(id=reference_token).first()
+    user_info = QRCode.query.filter_by(id=reference_token).first()
 
-    if qr_data:
+    if user_info:
+        emails = [{
+            'id': user_info.id,
+            'send_to': user_info.send_to,
+            'purpose': user_info.purpose,
+            'body': user_info.body
+        }]
         sent_from = app.config['MAIL_USERNAME']
-        return render_template('user.html', user_info=qr_data, sent_from=sent_from)
+        return render_template('user.html', emails=emails, sent_from=sent_from)
     else:
         return render_template('user.html', message='No data found for the given Reference Token.')
 

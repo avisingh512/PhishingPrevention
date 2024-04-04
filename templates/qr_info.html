@@ -3,6 +3,8 @@
 <head>
     <title>QR Code Information</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
@@ -81,9 +83,35 @@
                 display: block;
             }
         }
+
+        .home-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #b30606;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            z-index: 1; /* Add a higher z-index to ensure the icon is displayed on top */
+        }
+
+        .home-icon:hover {
+            color: #000000;
+        }
+
+        .report-phishing {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 30px; /* Add some bottom margin for spacing */
+        }
+
+        .report-phishing form {
+            display: inline-block; /* Make the form an inline-block element */
+        }
     </style>
 </head>
 <body>
+    <a href="/" onclick="goHome()" class="home-icon"><i class="fas fa-home"></i>Home</a>
     <div class="container">
         <div class="qr-info">
             <h1>QR Code Information</h1>
@@ -93,20 +121,19 @@
             <p><strong>Purpose:</strong> {{ body }}</p>
             <p><strong>Reference Token:</strong> {{ unique_id }}</p>
         </div>
-    </div>
-    <div class="buttons">
-        <button onclick="goHome()">Home</button>
-        <form action="/report_phishing" method="post">
-            <input type="hidden" name="email" value="{{ sent_from }}">
-            <input type="submit" value="Report Phishing">
-        </form>
+        <div class="report-phishing">
+            <form action="/report_phishing" method="post">
+                <input type="hidden" name="email" value="{{ sent_from }}">
+                <input type="submit" class="btn btn-danger" value="Report Phishing">
+            </form>
+        </div>
     </div>
     <script>
         const qrForm = document.getElementById('qr-form');
         const qrInfo = document.querySelector('.qr-info');
 
         qrForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the form from being submitted
+            event.preventDefault();
 
             const formData = new FormData(qrForm);
 
@@ -137,9 +164,9 @@
             const send_to_element = document.getElementById('send_to');
             const sender_info = send_to_element.textContent.split(':');
             const email = sender_info[1].trim();
-            localStorage.setItem('send_to', email);
-            window.location.href = '/user';
+            window.location.href = '/user/' + email;
         }
     </script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 </html>
